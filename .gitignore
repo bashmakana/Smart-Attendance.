@@ -3,6 +3,8 @@
 *.jpg
 *.jpeg
 *.csv
+*.h
+*.cpp
 __pycache__/
 *.py[cod]
 *$py.class
