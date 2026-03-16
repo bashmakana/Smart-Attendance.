@@ -1,0 +1,11 @@
+*.npy
+*.png
+*.jpg
+*.jpeg
+*.csv
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+venv/
+.vscode/

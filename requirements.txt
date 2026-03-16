@@ -1,0 +1,7 @@
+fastapi
+uvicorn
+numpy
+opencv-python-headless
+torch
+torchvision
+facenet-pytorch

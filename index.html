@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Attendance Control Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background: #1a1a1a;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+        }
+
+        #img-container {
+            position: relative;
+            display: inline-block;
+            border: 4px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        img {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        #status {
+            font-size: 20px;
+            font-weight: bold;
+            margin: 15px 0;
+            padding: 10px;
+            background: #333;
+            border-radius: 5px;
+            display: inline-block;
+            min-width: 300px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.1s, opacity 0.2s;
+            color: white;
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .btn-start {
+            background-color: #2ecc71;
+        }
+
+        .btn-stop {
+            background-color: #e74c3c;
+        }
+
+        .btn-download {
+            background-color: #3498db;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Server Face Recognition System</h1>
+
+    <div id="img-container">
+        <img id="live" src="" width="640" height="480" alt="Waiting for stream...">
+    </div>
+
+    <br>
+
+    <div id="status" style="color: #f1c40f;">System Status: CONNECTING...</div>
+
+    <div class="controls">
+        <button class="btn-start" onclick="sendCommand('start')">▶ START Attendance</button>
+        <button class="btn-stop" onclick="sendCommand('stop')">⏹ STOP Attendance</button>
+        <button class="btn-download" onclick="downloadCSV()">⬇ Download Sheet</button>
+    </div>
+
+    <script>
+        const SERVER_IP = "192.168.147.40";
+        const SERVER_PORT = "5001";
+
+        const BASE_URL = `http://${SERVER_IP}:${SERVER_PORT}`;
+        const img = document.getElementById('live');
+        const statusText = document.getElementById('status');
+
+        function sendCommand(action) {
+            let endpoint = "";
+            if (action === 'start') endpoint = "/start_attendance";
+            if (action === 'stop') endpoint = "/stop_attendance";
+
+            fetch(BASE_URL + endpoint, { method: "POST" })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.active === true) {
+                        statusText.innerText = "● RECORDING ATTENDANCE";
+                        statusText.style.color = "#2ecc71"; // Green
+                    } else {
+                        statusText.innerText = "II ATTENDANCE PAUSED";
+                        statusText.style.color = "#e74c3c"; // Red
+                    }
+                })
+                .catch(err => {
+                    console.error(err);
+                    statusText.innerText = "⚠ ERROR: Server Offline";
+                    statusText.style.color = "#f39c12";
+                });
+        }
+
+        function downloadCSV() {
+            window.location.href = BASE_URL + "/get_attendance";
+        }
+
+        function loadNewFrame() {
+            const newImg = new Image();
+            newImg.src = `${BASE_URL}/latest_frame?t=${Date.now()}`;
+
+            newImg.onload = function () {
+                img.src = newImg.src;
+                setTimeout(loadNewFrame, 10);
+            }
+
+            newImg.onerror = function () {
+                setTimeout(loadNewFrame, 500);
+            }
+        }
+
+        loadNewFrame();
+
+        sendCommand('stop'); 
+    </script>
+</body>
+
+</html>
